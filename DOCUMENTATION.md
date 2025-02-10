@@ -290,5 +290,194 @@ $: if (protectedRoutes.includes($page.url.pathname)) {
 }
 ```
 
+## 7. Navigation et Icônes
+
+### Structure de la Sidebar (`src/routes/+layout.svelte`)
+```svelte
+<script>
+    // Configuration des items du menu
+    const menuItems = [
+        { 
+            icon: '/icons/film.svg',
+            href: '/films',
+            label: 'Films',
+            activeColor: '#ff3e00'  // Orange pour les films
+        },
+        { 
+            icon: '/icons/trending.svg',
+            href: '/tendances',
+            label: 'Tendances',
+            activeColor: '#ff0066'  // Rose pour les tendances
+        },
+        { 
+            icon: '/icons/star.svg',
+            href: '/favoris',
+            label: 'Favoris',
+            activeColor: '#ffd700',  // Or pour les favoris
+            requireAuth: true
+        },
+        { 
+            icon: '/icons/category.svg',
+            href: '/genres',
+            label: 'Genres',
+            activeColor: '#00ff88'  // Vert menthe pour les genres
+        },
+        { 
+            icon: '/icons/calendar.svg',
+            href: '/prochainement',
+            label: 'À venir',
+            activeColor: '#00ccff'  // Bleu ciel pour les sorties
+        }
+    ];
+</script>
+
+<!-- Template de navigation -->
+<nav class="nav-menu">
+    {#each menuItems as item}
+        {@const isActive = $page.url.pathname === item.href}
+        <a 
+            href={item.href}
+            class="nav-link"
+            class:active={isActive}
+            style="--active-color: {item.activeColor}"
+        >
+            <img 
+                src={item.icon} 
+                alt={item.label}
+                class="nav-icon"
+                class:active={isActive}
+            />
+            <span class="nav-label" class:active={isActive}>
+                {item.label}
+            </span>
+        </a>
+    {/each}
+</nav>
+```
+
+### Styles de Navigation
+```css
+/* Styles de la sidebar */
+.sidebar {
+    width: 260px;
+    background: #0A0A0F;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+}
+
+/* Styles des liens de navigation */
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+/* Effet hover */
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+/* État actif */
+.nav-link.active {
+    background: color-mix(in srgb, var(--active-color) 10%, transparent);
+    color: var(--active-color);
+}
+
+/* Barre latérale colorée */
+.nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 1.5rem;
+    background: var(--active-color);
+    border-radius: 0 2px 2px 0;
+}
+
+/* Icônes de navigation */
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    filter: grayscale(100%);
+}
+
+.nav-icon.active {
+    opacity: 1;
+    filter: none;
+    /* Application de la couleur active */
+    filter: drop-shadow(0 0 8px var(--active-color));
+}
+
+/* Label du menu */
+.nav-label {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-label.active {
+    color: var(--active-color);
+}
+
+/* Adaptation mobile */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 80px;
+        padding: 1rem 0.5rem;
+    }
+
+    .nav-label {
+        display: none;
+    }
+
+    .nav-link {
+        justify-content: center;
+        padding: 0.75rem;
+    }
+}
+```
+
+### Personnalisation des Icônes SVG
+```css
+/* Modification des couleurs SVG */
+.nav-icon {
+    /* Permet la modification des couleurs SVG */
+    mask-size: cover;
+    -webkit-mask-size: cover;
+    background-color: currentColor;
+}
+
+/* Exemple pour chaque icône active */
+.nav-link.active[href="/films"] .nav-icon {
+    background-color: #ff3e00;
+}
+
+.nav-link.active[href="/tendances"] .nav-icon {
+    background-color: #ff0066;
+}
+
+.nav-link.active[href="/favoris"] .nav-icon {
+    background-color: #ffd700;
+}
+
+.nav-link.active[href="/genres"] .nav-icon {
+    background-color: #00ff88;
+}
+
+.nav-link.active[href="/prochainement"] .nav-icon {
+    background-color: #00ccff;
+}
+```
+
 ---
 Documentation technique rédigée par Franzy pour le cours de SVELTE 

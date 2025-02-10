@@ -172,14 +172,52 @@
 	}
 
 	.nav-icon {
-		width: 20px;
-		height: 20px;
-		opacity: 0.7;
-		transition: opacity 0.2s ease;
+		width: 24px;
+		height: 24px;
+		opacity: 0.9;
+		transition: all 0.3s ease;
+	}
+
+	.nav-link[href="/films"] .nav-icon {
+		filter: invert(56%) sepia(86%) saturate(2437%) hue-rotate(346deg) brightness(101%) contrast(101%);
+	}
+
+	.nav-link[href="/tendances"] .nav-icon {
+		filter: invert(27%) sepia(91%) saturate(7085%) hue-rotate(328deg) brightness(100%) contrast(101%);
+	}
+
+	.nav-link[href="/favoris"] .nav-icon {
+		filter: invert(77%) sepia(46%) saturate(638%) hue-rotate(359deg) brightness(103%) contrast(106%);
+	}
+
+	.nav-link[href="/genres"] .nav-icon {
+		filter: invert(91%) sepia(24%) saturate(1242%) hue-rotate(70deg) brightness(101%) contrast(102%);
+	}
+
+	.nav-link[href="/prochainement"] .nav-icon {
+		filter: invert(69%) sepia(98%) saturate(1704%) hue-rotate(157deg) brightness(103%) contrast(101%);
+	}
+
+	.nav-link:hover .nav-icon {
+		transform: scale(1.1);
+		opacity: 1;
 	}
 
 	.nav-icon.active {
 		opacity: 1;
+		transform: scale(1.2);
+		filter: drop-shadow(0 0 8px var(--active-color));
+	}
+
+	.nav-link:hover::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(circle at center, 
+			rgba(255, 255, 255, 0.1) 0%, 
+			transparent 70%);
+		pointer-events: none;
+		border-radius: 8px;
 	}
 
 	.nav-label {
