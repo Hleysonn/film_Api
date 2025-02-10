@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { fade, fly } from 'svelte/transition';
+    import { fade, fly, scale } from 'svelte/transition';
     import { goto } from '$app/navigation';
+    import { quintOut, elasticOut } from 'svelte/easing';
 
     let showContent = false;
     let showLogo = false;
@@ -9,33 +10,35 @@
     let showButtons = false;
 
     onMount(() => {
-        // Séquence d'animation
-        setTimeout(() => showLogo = true, 500);
-        setTimeout(() => showTagline = true, 1500);
-        setTimeout(() => showButtons = true, 2500);
-        setTimeout(() => showContent = true, 300);
+        // Démarrer immédiatement l'animation du fond
+        showContent = true;
+        
+        // Séquence d'animations avec des délais plus naturels
+        setTimeout(() => showLogo = true, 800);
+        setTimeout(() => showTagline = true, 1600);
+        setTimeout(() => showButtons = true, 2200);
     });
 </script>
 
 {#if showContent}
-<div class="splash-container" in:fade={{ duration: 1000 }}>
+<div class="splash-container" in:fade={{ duration: 1500, easing: quintOut }}>
     <div class="splash-content">
         {#if showLogo}
-            <div class="logo-container" in:fly={{ y: 50, duration: 1000 }}>
-                <span class="logo-emoji">🎬</span>
+            <div class="logo-container" in:fly={{ y: 30, duration: 1000, easing: quintOut }}>
+                <span class="logo-emoji" in:scale={{ duration: 800, easing: elasticOut, delay: 200 }}>🎬</span>
                 <h1 class="logo-text">CinéApp</h1>
             </div>
         {/if}
 
         {#if showTagline}
-            <p class="tagline" in:fly={{ y: 20, duration: 1000 }}>
+            <p class="tagline" in:fly={{ y: 20, duration: 800, easing: quintOut }}>
                 Découvrez, partagez et collectionnez<br>
                 vos films préférés
             </p>
         {/if}
 
         {#if showButtons}
-            <div class="buttons-container" in:fly={{ y: 20, duration: 1000 }}>
+            <div class="buttons-container" in:fly={{ y: 20, duration: 800, easing: quintOut }}>
                 <a href="/films" class="cta-button primary">
                     Explorer les films
                     <span class="arrow">→</span>
@@ -47,10 +50,76 @@
         {/if}
     </div>
 
+    <div class="signature">
+        App de cinéma codée par Franzy pour le cours de SVELTE
+    </div>
+
     <div class="background-decoration">
-        <div class="circle circle-1"></div>
-        <div class="circle circle-2"></div>
-        <div class="circle circle-3"></div>
+        <!-- Petites particules lumineuses -->
+        {#each Array(15) as _, i}
+            <div class="light-particle small" 
+                 style="
+                    --delay: {Math.random() * -30}s;
+                    --size: {4 + Math.random() * 6}px;
+                    --start-x: {Math.random() * 100}%;
+                    --start-y: {Math.random() * 100}%;
+                    --travel-distance: {150 + Math.random() * 200}px;
+                    --opacity: {0.4 + Math.random() * 0.3};
+                 "
+            ></div>
+        {/each}
+
+        <!-- Particules moyennes -->
+        {#each Array(12) as _, i}
+            <div class="light-particle medium" 
+                 style="
+                    --delay: {Math.random() * -30}s;
+                    --size: {8 + Math.random() * 12}px;
+                    --start-x: {Math.random() * 100}%;
+                    --start-y: {Math.random() * 100}%;
+                    --travel-distance: {100 + Math.random() * 150}px;
+                    --opacity: {0.6 + Math.random() * 0.3};
+                 "
+            ></div>
+        {/each}
+
+        <!-- Grosses particules -->
+        {#each Array(8) as _, i}
+            <div class="light-particle large" 
+                 style="
+                    --delay: {Math.random() * -30}s;
+                    --size: {15 + Math.random() * 20}px;
+                    --start-x: {Math.random() * 100}%;
+                    --start-y: {Math.random() * 100}%;
+                    --travel-distance: {50 + Math.random() * 100}px;
+                    --opacity: {0.2 + Math.random() * 0.4};
+                 "
+            ></div>
+        {/each}
+
+        <svg class="cinema-decoration" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+            <!-- Effet de lumière de base -->
+            <radialGradient id="spotlight" cx="50%" cy="50%" r="70%">
+                <stop offset="0%" style="stop-color: rgba(255, 62, 0, 0.08);" />
+                <stop offset="100%" style="stop-color: rgba(255, 62, 0, 0);" />
+            </radialGradient>
+            
+            <circle cx="500" cy="500" r="400" 
+                    fill="url(#spotlight)"
+                    class="light-effect" />
+
+            <!-- Effet de lumière qui traverse -->
+            <linearGradient id="beam" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color: rgba(255, 62, 0, 0);" />
+                <stop offset="50%" style="stop-color: rgba(255, 62, 0, 0.1);" />
+                <stop offset="100%" style="stop-color: rgba(255, 62, 0, 0);" />
+            </linearGradient>
+
+            <rect width="200%" height="200%" 
+                  fill="url(#beam)"
+                  class="moving-light"
+                  transform="rotate(-45)" />
+        </svg>
     </div>
 </div>
 {/if}
@@ -84,6 +153,8 @@
     .logo-emoji {
         font-size: 4rem;
         filter: drop-shadow(0 0 10px rgba(255, 62, 0, 0.3));
+        display: inline-block;
+        transform-origin: center;
     }
 
     .logo-text {
@@ -102,25 +173,26 @@
         color: rgba(255, 255, 255, 0.9);
         margin-bottom: 3rem;
         line-height: 1.6;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .buttons-container {
         display: flex;
-        gap: 1rem;
+        gap: 1.5rem;
         justify-content: center;
         flex-wrap: wrap;
     }
 
     .cta-button {
-        padding: 1rem 2rem;
+        padding: 1.2rem 2.5rem;
         border-radius: 12px;
         font-size: 1.1rem;
         font-weight: 600;
         text-decoration: none;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .cta-button.primary {
@@ -130,7 +202,7 @@
     }
 
     .cta-button.primary:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px);
         box-shadow: 0 6px 25px rgba(255, 62, 0, 0.4);
     }
 
@@ -138,19 +210,20 @@
         background: rgba(255, 255, 255, 0.1);
         color: white;
         border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
     }
 
     .cta-button.secondary:hover {
         background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-2px);
+        transform: translateY(-3px);
     }
 
     .arrow {
-        transition: transform 0.3s ease;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .cta-button:hover .arrow {
-        transform: translateX(4px);
+        transform: translateX(6px);
     }
 
     .background-decoration {
@@ -160,57 +233,42 @@
         z-index: 1;
     }
 
-    .circle {
+    .cinema-decoration {
         position: absolute;
-        border-radius: 50%;
-        filter: blur(60px);
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        opacity: 0.8;
     }
 
-    .circle-1 {
-        width: 400px;
-        height: 400px;
-        background: rgba(255, 62, 0, 0.15);
-        top: -100px;
-        right: -100px;
-        animation: float 8s ease-in-out infinite;
+    .moving-light {
+        animation: light-move 8s linear infinite;
+        transform-origin: center;
+        opacity: 0.6;
+        mix-blend-mode: screen;
     }
 
-    .circle-2 {
-        width: 300px;
-        height: 300px;
-        background: rgba(0, 150, 255, 0.1);
-        bottom: -50px;
-        left: -50px;
-        animation: float 10s ease-in-out infinite reverse;
+    @keyframes light-move {
+        0% {
+            transform: rotate(-45deg) translate(-100%, -50%);
+        }
+        100% {
+            transform: rotate(-45deg) translate(0%, -50%);
+        }
     }
 
-    .circle-3 {
-        width: 200px;
-        height: 200px;
-        background: rgba(255, 62, 0, 0.1);
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        animation: pulse 6s ease-in-out infinite;
+    .light-effect {
+        animation: subtle-pulse 10s ease-in-out infinite;
     }
 
-    @keyframes float {
+    @keyframes subtle-pulse {
         0%, 100% {
-            transform: translate(0, 0);
-        }
-        50% {
-            transform: translate(30px, 30px);
-        }
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0.5;
-        }
-        50% {
-            transform: translate(-50%, -50%) scale(1.5);
+            transform: scale(1);
             opacity: 0.8;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0.6;
         }
     }
 
@@ -231,11 +289,79 @@
         .buttons-container {
             flex-direction: column;
             padding: 0 1rem;
+            gap: 1rem;
         }
 
         .cta-button {
             width: 100%;
             justify-content: center;
+            padding: 1rem 2rem;
         }
+
+        .signature {
+            font-size: 0.75rem;
+            padding: 0 1rem;
+        }
+    }
+
+    .light-particle {
+        position: absolute;
+        width: var(--size);
+        height: var(--size);
+        border-radius: 50%;
+        pointer-events: none;
+        left: var(--start-x);
+        top: var(--start-y);
+        animation: float-particle 15s linear infinite;
+        animation-delay: var(--delay);
+    }
+
+    .light-particle.small {
+        background: radial-gradient(circle at center, rgba(255, 62, 0, var(--opacity)), rgba(255, 62, 0, 0) 60%);
+        filter: blur(1px);
+        animation-duration: 20s;
+    }
+
+    .light-particle.medium {
+        background: radial-gradient(circle at center, rgba(255, 62, 0, var(--opacity)), rgba(255, 62, 0, 0) 70%);
+        filter: blur(2px);
+        animation-duration: 15s;
+    }
+
+    .light-particle.large {
+        background: radial-gradient(circle at center, rgba(255, 62, 0, var(--opacity)), rgba(255, 62, 0, 0) 80%);
+        filter: blur(3px);
+        animation-duration: 25s;
+    }
+
+    @keyframes float-particle {
+        0% {
+            transform: translate(0, 0);
+            opacity: 0;
+        }
+        20% {
+            opacity: var(--opacity);
+        }
+        80% {
+            opacity: var(--opacity);
+        }
+        100% {
+            transform: translate(var(--travel-distance), calc(var(--travel-distance) * -1));
+            opacity: 0;
+        }
+    }
+
+    .signature {
+        position: absolute;
+        bottom: 1rem;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.875rem;
+        z-index: 2;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        font-style: italic;
+        letter-spacing: 0.5px;
     }
 </style>
