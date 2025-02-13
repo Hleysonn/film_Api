@@ -1,12 +1,9 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     import MovieModal from '$lib/components/MovieModal.svelte';
     import { favoritesStore } from '$lib/stores/favorites';
     import { auth } from '$lib/stores/auth';
     import { goto } from '$app/navigation';
-    import { get } from 'svelte/store';
-    import { page } from '$app/stores';
     import { searchQuery } from '$lib/stores/search';
     import '$styles/films.css';
 
@@ -21,11 +18,10 @@
         vote_count: number;
     }
     
-    let films: Film[] = [];
-    let loading = true;
-    let error: string | null = null;
-    let currentPage = 1;
-    let totalPages = 1;
+    export let data;
+    let films = data.films;
+    let currentPage = data.currentPage;
+    let totalPages = data.totalPages;
     let selectedMovie: Film | null = null;
     let isModalOpen = false;
 
@@ -35,33 +31,16 @@
         film.overview.toLowerCase().includes($searchQuery.toLowerCase())
     );
 
-    async function loadMovies(page: number) {
-        try {
-            loading = true;
-            const response = await fetch(
-                `${import.meta.env.VITE_TMDB_API_URL}/movie/popular?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=fr-FR&page=${page}`
-            );
-            const data = await response.json();
-            films = data.results;
-            totalPages = data.total_pages;
-            currentPage = data.page;
-        } catch (e) {
-            error = "Erreur lors du chargement des films";
-        } finally {
-            loading = false;
-        }
-    }
-
-    function nextPage() {
+    async function nextPage() {
         if (currentPage < totalPages) {
-            loadMovies(currentPage + 1);
+            await goto(`?page=${currentPage + 1}`);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 
-    function previousPage() {
+    async function previousPage() {
         if (currentPage > 1) {
-            loadMovies(currentPage - 1);
+            await goto(`?page=${currentPage - 1}`);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
@@ -101,10 +80,6 @@
             favoritesStore.addFavorite(favoriteMovie);
         }
     }
-
-    onMount(() => {
-        loadMovies(1);
-    });
 </script>
 
 <div class="movies-container">

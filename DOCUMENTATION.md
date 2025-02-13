@@ -481,3 +481,157 @@ $: if (protectedRoutes.includes($page.url.pathname)) {
 
 ---
 Documentation technique rédigée par Franzy pour le cours de SVELTE 
+
+# Documentation du Projet Film API
+
+## Table des Matières
+1. [Service API Centralisé](#service-api-centralisé)
+2. [Gestion des Genres](#gestion-des-genres)
+3. [Pages de Navigation](#pages-de-navigation)
+4. [Gestion d'Erreurs](#gestion-derreurs)
+5. [Recherche et Filtrage](#recherche-et-filtrage)
+6. [Optimisations](#optimisations)
+7. [Internationalisation](#internationalisation)
+
+## Service API Centralisé
+
+Le service API est centralisé dans `src/lib/services/api.ts` et fournit les méthodes suivantes :
+
+```typescript
+class ApiService {
+    // Méthode privée pour les appels API authentifiés
+    private async fetchWithAuth(endpoint: string, params: Record<string, string | number>)
+
+    // Films populaires
+    async getPopularMovies(page: number = 1): Promise<MovieResponse>
+
+    // Films tendances de la semaine
+    async getTrendingMovies(page: number = 1): Promise<MovieResponse>
+
+    // Films à venir
+    async getUpcomingMovies(page: number = 1): Promise<MovieResponse>
+
+    // Liste des genres
+    async getGenres(): Promise<GenreResponse>
+
+    // Films par genre
+    async getMoviesByGenre(genreId: number, page: number = 1): Promise<MovieResponse>
+
+    // Recherche de films par titre
+    async getMoviesByTitle(title: string, page: number = 1): Promise<MovieResponse>
+
+    // Films par date de sortie
+    async getMoviesByDate(date: string, page: number = 1): Promise<MovieResponse>
+
+    // Films par note
+    async getMoviesByNote(note: number, page: number = 1): Promise<MovieResponse>
+}
+```
+
+## Gestion des Genres
+
+### Fichiers Serveur
+- `/genres/+page.server.ts` : Liste tous les genres disponibles
+- `/genres/[id]/+page.server.ts` : Charge les films d'un genre spécifique
+
+### Interfaces
+```typescript
+interface Genre {
+    id: number;
+    name: string;
+}
+
+interface GenreResponse {
+    genres: Genre[];
+}
+```
+
+## Pages de Navigation
+
+### Page de Genre (`/genres/[id]/+page.svelte`)
+- Affichage des films par genre
+- Pagination
+- Recherche dans les résultats
+- Gestion des favoris
+- Modal de détails des films
+
+## Gestion d'Erreurs
+
+- Vérification des variables d'environnement
+- Messages d'erreur détaillés
+- Gestion des erreurs API
+- Validation des données reçues
+
+## Recherche et Filtrage
+
+### Fonctionnalités
+- Recherche par titre
+- Filtrage par date
+- Filtrage par note
+- Tri par popularité pour les genres
+
+### Exemple d'utilisation
+```typescript
+// Recherche de films
+const films = await api.getMoviesByTitle("Matrix");
+
+// Filtrage par date
+const filmsDate = await api.getMoviesByDate("2023-01-01");
+
+// Filtrage par note
+const filmsNote = await api.getMoviesByNote(8);
+```
+
+## Optimisations
+
+- Utilisation de `Promise.all` pour les requêtes parallèles
+- Chargement lazy des images
+- Pagination côté serveur
+- Transitions fluides avec Svelte
+
+### Exemple de requêtes parallèles
+```typescript
+const [genreData, moviesData] = await Promise.all([
+    api.getGenres(),
+    api.getMoviesByGenre(genreId, page)
+]);
+```
+
+## Internationalisation
+
+Support complet du français pour :
+- Les titres de films
+- Les descriptions
+- Les dates
+- Les messages d'erreur
+- Les genres
+
+### Configuration
+```typescript
+// Configuration de la langue dans les requêtes API
+language: 'fr-FR'
+
+// Formatage des dates
+new Date(date).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+})
+```
+
+## Variables d'Environnement
+
+Créez un fichier `.env` à la racine du projet avec :
+```env
+VITE_TMDB_API_URL=https://api.themoviedb.org/3
+VITE_TMDB_API_KEY=votre_clé_api_tmdb
+```
+
+## Contribution
+
+Pour contribuer au projet :
+1. Forkez le repository
+2. Créez une branche pour votre fonctionnalité
+3. Committez vos changements
+4. Poussez vers la branche
+5. Créez une Pull Request 

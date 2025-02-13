@@ -4,6 +4,7 @@
     import MovieModal from '$lib/components/MovieModal.svelte';
     import { favoritesStore } from '$lib/stores/favorites';
     import { searchQuery } from '$lib/stores/search';
+    import { goto } from '$app/navigation';
     import '$styles/tendances.css';
     
     interface Film {
@@ -17,11 +18,10 @@
         vote_count: number;
     }
     
-    let films: Film[] = [];
-    let loading = true;
-    let error: string | null = null;
-    let currentPage = 1;
-    let totalPages = 1;
+    export let data;
+    let films = data.films;
+    let currentPage = data.currentPage;
+    let totalPages = data.totalPages;
     let selectedMovie: Film | null = null;
     let isModalOpen = false;
 
@@ -30,33 +30,16 @@
         film.overview.toLowerCase().includes($searchQuery.toLowerCase())
     );
 
-    async function loadMovies(page: number) {
-        try {
-            loading = true;
-            const response = await fetch(
-                `${import.meta.env.VITE_TMDB_API_URL}/trending/movie/week?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=fr-FR&page=${page}`
-            );
-            const data = await response.json();
-            films = data.results;
-            totalPages = data.total_pages;
-            currentPage = data.page;
-        } catch (e) {
-            error = "Erreur lors du chargement des films";
-        } finally {
-            loading = false;
-        }
-    }
-
-    function nextPage() {
+    async function nextPage() {
         if (currentPage < totalPages) {
-            loadMovies(currentPage + 1);
+            await goto(`?page=${currentPage + 1}`);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 
-    function previousPage() {
+    async function previousPage() {
         if (currentPage > 1) {
-            loadMovies(currentPage - 1);
+            await goto(`?page=${currentPage - 1}`);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
@@ -72,91 +55,76 @@
     }
 
     function toggleFavorite(event: MouseEvent, movie: Film) {
-        event.stopPropagation(); // Empêche l'ouverture du modal
+        event.stopPropagation();
         if (favoritesStore.isFavorite(movie.id)) {
             favoritesStore.removeFavorite(movie.id);
         } else {
             favoritesStore.addFavorite(movie);
         }
     }
-
-    onMount(() => {
-        loadMovies(1);
-    });
 </script>
 
 <div class="movies-container">
     <h1 class="title">FILMS TENDANCES</h1>
     
-    {#if loading && films.length === 0}
-        <div class="loading-container">
-            <div class="loader"></div>
-            <p>Chargement des films...</p>
-        </div>
-    {:else if error}
-        <div class="error-container">
-            <p>{error}</p>
-        </div>
-    {:else}
-        {#if $searchQuery}
-            <div class="search-results" transition:fade>
-                {#if filteredFilms.length === 0}
-                    <p class="no-results">Aucun film ne correspond à votre recherche "{$searchQuery}"</p>
-                {:else}
-                    <p class="results-count">{filteredFilms.length} film{filteredFilms.length > 1 ? 's' : ''} trouvé{filteredFilms.length > 1 ? 's' : ''}</p>
-                {/if}
-            </div>
-        {/if}
-
-        <div class="movies-grid">
-            {#each filteredFilms as movie (movie.id)}
-                <div class="movie-card" transition:fade on:click={() => openModal(movie)}>
-                    <div class="movie-poster">
-                        <img 
-                            src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
-                            alt={movie.title}
-                            loading="lazy"
-                        />
-                        <div class="movie-overlay">
-                            <div class="movie-rating">
-                                <span>{movie.vote_average.toFixed(1)}</span>
-                            </div>
-                            <button 
-                                class="favorite-button" 
-                                on:click={(e) => toggleFavorite(e, movie)}
-                                class:is-favorite={favoritesStore.isFavorite(movie.id)}
-                            >
-                                ♥
-                            </button>
-                            <p class="movie-overview">{movie.overview}</p>
-                        </div>
-                    </div>
-                    <div class="movie-info">
-                        <h3>{movie.title}</h3>
-                        <p class="release-date">{new Date(movie.release_date).getFullYear()}</p>
-                    </div>
-                </div>
-            {/each}
-        </div>
-
-        <div class="pagination">
-            <button 
-                class="pagination-button" 
-                on:click={previousPage} 
-                disabled={currentPage === 1 || loading}
-            >
-                ←
-            </button>
-            <span class="page-info">Page {currentPage} / {totalPages}</span>
-            <button 
-                class="pagination-button" 
-                on:click={nextPage} 
-                disabled={currentPage === totalPages || loading}
-            >
-                →
-            </button>
+    {#if $searchQuery}
+        <div class="search-results" transition:fade>
+            {#if filteredFilms.length === 0}
+                <p class="no-results">Aucun film ne correspond à votre recherche "{$searchQuery}"</p>
+            {:else}
+                <p class="results-count">{filteredFilms.length} film{filteredFilms.length > 1 ? 's' : ''} trouvé{filteredFilms.length > 1 ? 's' : ''}</p>
+            {/if}
         </div>
     {/if}
+
+    <div class="movies-grid">
+        {#each filteredFilms as movie (movie.id)}
+            <div class="movie-card" transition:fade on:click={() => openModal(movie)}>
+                <div class="movie-poster">
+                    <img 
+                        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
+                        alt={movie.title}
+                        loading="lazy"
+                    />
+                    <div class="movie-overlay">
+                        <div class="movie-rating">
+                            <span>{movie.vote_average.toFixed(1)}</span>
+                        </div>
+                        <button 
+                            class="favorite-button" 
+                            on:click={(e) => toggleFavorite(e, movie)}
+                            class:is-favorite={favoritesStore.isFavorite(movie.id)}
+                        >
+                            ♥
+                        </button>
+                        <p class="movie-overview">{movie.overview}</p>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <h3>{movie.title}</h3>
+                    <p class="release-date">{new Date(movie.release_date).getFullYear()}</p>
+                </div>
+            </div>
+        {/each}
+    </div>
+
+    <div class="pagination">
+        <button 
+            class="pagination-button" 
+            on:click={previousPage} 
+            disabled={currentPage === 1}
+        >
+            ←
+        </button>
+        <span class="page-info">Page {currentPage} / {totalPages}</span>
+        <button 
+            class="pagination-button" 
+            on:click={nextPage} 
+            disabled={currentPage === totalPages}
+        >
+            →
+        </button>
+    </div>
 </div>
 
 {#if selectedMovie}
