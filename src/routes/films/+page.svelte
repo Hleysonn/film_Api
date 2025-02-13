@@ -5,6 +5,10 @@
     import { favoritesStore } from '$lib/stores/favorites';
     import { auth } from '$lib/stores/auth';
     import { goto } from '$app/navigation';
+    import { get } from 'svelte/store';
+    import { page } from '$app/stores';
+    import { searchQuery } from '$lib/stores/search';
+    import '../../styles/films.css';
 
     interface Film {
         id: number;
@@ -26,6 +30,10 @@
     let isModalOpen = false;
 
     $: isAuthenticated = $auth.isAuthenticated;
+    $: filteredFilms = films.filter(film => 
+        film.title.toLowerCase().includes($searchQuery.toLowerCase()) ||
+        film.overview.toLowerCase().includes($searchQuery.toLowerCase())
+    );
 
     async function loadMovies(page: number) {
         try {
@@ -102,8 +110,18 @@
 <div class="movies-container">
     <h1 class="title">FILMS</h1>
     
+    {#if $searchQuery}
+        <div class="search-results" transition:fade>
+            {#if filteredFilms.length === 0}
+                <p class="no-results">Aucun film ne correspond à votre recherche "{$searchQuery}"</p>
+            {:else}
+                <p class="results-count">{filteredFilms.length} film{filteredFilms.length > 1 ? 's' : ''} trouvé{filteredFilms.length > 1 ? 's' : ''}</p>
+            {/if}
+        </div>
+    {/if}
+    
     <div class="movies-grid">
-        {#each films as movie (movie.id)}
+        {#each filteredFilms as movie (movie.id)}
             <div class="movie-card" transition:fade on:click={() => openModal(movie)}>
                 <div class="movie-poster">
                     <img 
@@ -169,21 +187,24 @@
 
     .movies-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 2rem;
+        padding: 1rem 0;
     }
 
     .movie-card {
-        background: var(--card-bg, #1a1a1a);
+        background: var(--card-bg);
         border-radius: 12px;
         overflow: hidden;
-        transition: transform 0.2s ease-in-out;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        box-shadow: var(--card-shadow);
         cursor: pointer;
+        border: 1px solid var(--card-border);
     }
 
     .movie-card:hover {
         transform: translateY(-5px);
+        box-shadow: var(--card-hover-shadow);
     }
 
     .movie-poster {
@@ -201,14 +222,11 @@
 
     .movie-overlay {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        padding: 1rem;
+        inset: 0;
+        background: var(--overlay-bg);
+        padding: 1.5rem;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: all 0.3s ease;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -235,13 +253,13 @@
     }
 
     .movie-overview {
-        color: white;
+        color: var(--overlay-text);
         font-size: 0.9rem;
-        line-height: 1.4;
+        line-height: 1.5;
         max-height: 80%;
         overflow-y: auto;
         scrollbar-width: thin;
-        padding-right: 0.5rem;
+        scrollbar-color: var(--accent-color) rgba(255, 255, 255, 0.1);
     }
 
     .movie-info {
@@ -251,7 +269,7 @@
     .movie-info h3 {
         margin: 0;
         font-size: 1.1rem;
-        color: var(--text-color, white);
+        color: var(--text-primary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -260,16 +278,116 @@
     .release-date {
         margin: 0.5rem 0 0;
         font-size: 0.9rem;
-        color: var(--text-muted, #888);
+        color: var(--text-secondary);
+    }
+
+    @media (max-width: 1400px) {
+        .movies-container {
+            padding: 2rem;
+        }
+
+        .movies-grid {
+            gap: 1.5rem;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .movies-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .movies-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
     }
 
     @media (max-width: 768px) {
+        .movies-container {
+            padding: 1.5rem;
+        }
+
+        .movies-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+
+        .title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .movie-info h3 {
+            font-size: 1rem;
+        }
+
+        .movie-overview {
+            font-size: 0.8125rem;
+            line-height: 1.4;
+        }
+
+        .search-results {
+            margin-bottom: 1.5rem;
+        }
+
+        .results-count, .no-results {
+            font-size: 1rem;
+        }
+
+        .pagination {
+            margin-top: 1.5rem;
+            gap: 0.75rem;
+        }
+
+        .pagination-button {
+            padding: 0.625rem 1rem;
+            font-size: 1rem;
+        }
+
+        .page-info {
+            font-size: 0.875rem;
+            min-width: 120px;
+        }
+    }
+
+    @media (max-width: 480px) {
         .movies-container {
             padding: 1rem;
         }
 
         .movies-grid {
+            grid-template-columns: repeat(1, 1fr);
             gap: 1rem;
+        }
+
+        .title {
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .movie-card {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .movie-info h3 {
+            font-size: 1.125rem;
+        }
+
+        .movie-overview {
+            font-size: 0.875rem;
+        }
+
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .page-info {
+            order: -1;
+            width: 100%;
+            margin-bottom: 0.75rem;
         }
     }
 
@@ -304,7 +422,7 @@
 
     .page-info {
         font-size: 1.1rem;
-        color: var(--text-color, white);
+        color: var(--text-primary);
         min-width: 150px;
         text-align: center;
     }
@@ -314,7 +432,7 @@
         font-size: 2.5rem;
         font-weight: bold;
         margin-bottom: 2rem;
-        color: var(--text-color, white);
+        color: var(--text-primary);
         text-transform: uppercase;
         letter-spacing: 0.2em;
         position: relative;
@@ -359,5 +477,20 @@
 
     .favorite-button.is-favorite {
         color: #ff3e00;
+    }
+
+    .search-results {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: var(--text-muted, #888);
+    }
+
+    .no-results {
+        color: var(--accent-color, #ff3e00);
+        font-size: 1.1rem;
+    }
+
+    .results-count {
+        font-size: 1.1rem;
     }
 </style> 

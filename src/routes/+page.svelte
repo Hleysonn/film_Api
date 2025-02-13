@@ -126,20 +126,21 @@
 
 <style>
     .splash-container {
-        min-height: 100vh;
+        position: fixed;
+        inset: 0;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        position: relative;
         overflow: hidden;
-        background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
-        padding: 2rem;
+        background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     }
 
     .splash-content {
         text-align: center;
         z-index: 2;
         max-width: 600px;
+        padding: 2rem;
     }
 
     .logo-container {
@@ -227,7 +228,7 @@
     }
 
     .background-decoration {
-        position: absolute;
+        position: fixed;
         inset: 0;
         overflow: hidden;
         z-index: 1;
@@ -353,15 +354,12 @@
 
     .signature {
         position: absolute;
-        bottom: 1rem;
+        bottom: 2rem;
         left: 0;
         right: 0;
         text-align: center;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-secondary);
         font-size: 0.875rem;
         z-index: 2;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        font-style: italic;
-        letter-spacing: 0.5px;
     }
 </style>

@@ -3,6 +3,20 @@
     import { onMount } from 'svelte';
     import { auth } from '$lib/stores/auth';
     import { votesStore } from '$lib/stores/votes';
+    import { goto } from '$app/navigation';
+    import '../../styles/modal.css';
+    
+    interface Actor {
+        id: number;
+        name: string;
+        character: string;
+        profile_path: string | null;
+        biography?: string;
+        birthday?: string;
+        place_of_birth?: string;
+        deathday?: string | null;
+        known_for_department?: string;
+    }
     
     export let movie: {
         id: number;
@@ -19,7 +33,7 @@
 
     let videoKey: string | null = null;
     let loading = true;
-    let cast: any[] = [];
+    let cast: Actor[] = [];
     let selectedRating = $votesStore[movie.id] || 0;
     let isVoting = false;
     let voteMessage = '';
@@ -66,10 +80,40 @@
                 `${import.meta.env.VITE_TMDB_API_URL}/movie/${movie.id}/credits?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=fr-FR`
             );
             const data = await response.json();
-            cast = data.cast.slice(0, 5); // On prend les 5 premiers acteurs
-            loading = false;
+            
+            // On ne prend que les 3 premiers acteurs
+            const mainCast = data.cast.slice(0, 3);
+            
+            // Pour chaque acteur, on récupère ses détails complets
+            const actorsWithDetails = await Promise.all(
+                mainCast.map(async (actor: { id: number; name: string; character: string; profile_path: string | null; biography?: string; birthday?: string; place_of_birth?: string; deathday?: string | null; known_for_department?: string }) => {
+                    try {
+                        const detailsResponse = await fetch(
+                            `${import.meta.env.VITE_TMDB_API_URL}/person/${actor.id}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=fr-FR`
+                        );
+                        const details = await detailsResponse.json();
+                        
+                        // On combine les informations du casting avec les détails de l'acteur
+                        return {
+                            ...actor,
+                            biography: details.biography,
+                            birthday: details.birthday,
+                            place_of_birth: details.place_of_birth,
+                            deathday: details.deathday,
+                            known_for_department: details.known_for_department,
+                            profile_path: details.profile_path || actor.profile_path
+                        };
+                    } catch (error) {
+                        console.error(`Erreur lors du chargement des détails de l'acteur ${actor.id}:`, error);
+                        return actor;
+                    }
+                })
+            );
+            
+            cast = actorsWithDetails;
         } catch (error) {
             console.error('Erreur lors du chargement des acteurs:', error);
+        } finally {
             loading = false;
         }
     }
@@ -134,6 +178,11 @@
         } finally {
             isVoting = false;
         }
+    }
+
+    function navigateToActor(actorId: number) {
+        onClose(); // Fermer le modal avant la navigation
+        goto(`/acteur/${actorId}`);
     }
 
     onMount(async () => {
@@ -248,16 +297,25 @@
                     {#if !loading && cast.length > 0}
                         <div class="cast-section">
                             <h3>Acteurs</h3>
-                            <div class="cast-pills">
-                                {#each cast.slice(0, 3) as actor}
-                                    <a 
-                                        href={`https://www.themoviedb.org/person/${actor.id}`} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        class="actor-pill"
+                            <div class="cast-list">
+                                {#each cast as actor}
+                                    <div 
+                                        class="cast-item" 
+                                        on:click={() => navigateToActor(actor.id)}
+                                        on:keydown={(e) => e.key === 'Enter' && navigateToActor(actor.id)}
+                                        tabindex="0"
+                                        role="button"
                                     >
-                                        {actor.name}
-                                    </a>
+                                        <img 
+                                            src={actor.profile_path ? `https://image.tmdb.org/t/p/w45${actor.profile_path}` : '/placeholder-avatar.png'} 
+                                            alt={actor.name}
+                                            class="cast-avatar"
+                                        />
+                                        <div class="cast-info">
+                                            <p class="cast-name">{actor.name}</p>
+                                            <p class="cast-character">{actor.character}</p>
+                                        </div>
+                                    </div>
                                 {/each}
                             </div>
                         </div>
@@ -275,24 +333,27 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.85);
+        background-color: rgba(0, 0, 0, 0.75);
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 2rem;
         z-index: 1000;
-        backdrop-filter: blur(5px);
+        padding: 2rem;
+        box-sizing: border-box;
+        backdrop-filter: blur(8px);
     }
 
     .modal-content {
-        background: var(--card-bg, #1a1a1a);
-        border-radius: 16px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        border-radius: 1rem;
         width: 100%;
-        max-width: 1000px;
+        max-width: 1200px;
         max-height: 90vh;
         overflow-y: auto;
         position: relative;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border-color);
     }
 
     .close-button {
@@ -301,53 +362,57 @@
         right: 1rem;
         background: none;
         border: none;
-        color: var(--text-color, white);
         font-size: 2rem;
+        color: var(--text-secondary);
         cursor: pointer;
-        z-index: 2;
-        width: 40px;
-        height: 40px;
+        width: 2.5rem;
+        height: 2.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
     }
 
     .close-button:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--bg-secondary);
+        color: var(--text-primary);
     }
 
     .modal-grid {
         display: grid;
-        grid-template-columns: 300px 1fr;
+        grid-template-columns: minmax(300px, 2fr) 3fr;
         gap: 2rem;
         padding: 2rem;
     }
 
     .modal-media {
-        width: 100%;
-        max-width: 500px;
+        position: relative;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: var(--bg-secondary);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .modal-media img {
         width: 100%;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        height: auto;
+        display: block;
+        border-radius: 0.75rem;
     }
 
     .modal-info {
-        color: var(--text-color, white);
+        color: var(--text-primary);
     }
 
     .modal-info h2 {
         font-size: 2rem;
         margin: 0 0 0.5rem 0;
-        line-height: 1.2;
+        color: var(--text-primary);
     }
 
     .original-title {
-        color: var(--text-muted, #888);
+        color: var(--text-secondary);
         font-style: italic;
         margin: 0 0 1rem 0;
     }
@@ -356,52 +421,54 @@
         display: flex;
         align-items: center;
         gap: 1rem;
-        margin: 1.5rem 0;
+        margin: 1rem 0;
     }
 
     .rating {
-        background: var(--accent-color, #ff3e00);
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        display: inline-flex;
+        display: flex;
         align-items: baseline;
-        gap: 0.2rem;
+        color: var(--accent-color);
     }
 
     .rating-value {
-        font-size: 1.5rem;
+        font-size: 2rem;
         font-weight: bold;
     }
 
     .rating-max {
-        opacity: 0.8;
+        color: var(--text-secondary);
+        margin-left: 0.25rem;
     }
 
     .vote-count {
-        color: var(--text-muted, #888);
+        color: var(--text-secondary);
     }
 
     .overview {
-        margin-top: 2rem;
+        margin: 2rem 0;
+        color: var(--text-primary);
     }
 
     .overview h3 {
-        font-size: 1.3rem;
         margin-bottom: 1rem;
-        color: var(--accent-color, #ff3e00);
+        color: var(--text-primary);
     }
 
     .overview p {
         line-height: 1.6;
+        color: var(--text-secondary);
+    }
+
+    .release-date {
+        color: var(--text-secondary);
+        margin: 1rem 0;
     }
 
     .video-container {
         position: relative;
-        width: 100%;
-        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        padding-bottom: 56.25%;
         height: 0;
         overflow: hidden;
-        border-radius: 8px;
     }
 
     .video-container iframe {
@@ -410,103 +477,126 @@
         left: 0;
         width: 100%;
         height: 100%;
+        border: none;
     }
 
     .cast-section {
-        margin-top: 1.5rem;
+        margin-top: 2rem;
     }
 
     .cast-section h3 {
-        font-size: 1.3rem;
-        margin-bottom: 0.75rem;
-        color: var(--accent-color, #ff3e00);
+        color: var(--text-primary);
+        margin-bottom: 1rem;
     }
 
-    .cast-pills {
+    .cast-list {
         display: flex;
+        gap: 1rem;
         flex-wrap: wrap;
-        gap: 0.5rem;
     }
 
-    .actor-pill {
-        background: rgba(255, 62, 0, 0.1);
-        color: var(--accent-color, #ff3e00);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        text-decoration: none;
+    .cast-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: var(--bg-secondary);
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .cast-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-hover-shadow);
+        background: var(--hover-bg);
+    }
+
+    .cast-item:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--accent-color);
+    }
+
+    .cast-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .cast-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cast-name {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .cast-character {
+        color: var(--text-secondary);
         font-size: 0.9rem;
-        transition: all 0.2s ease;
-        border: 1px solid rgba(255, 62, 0, 0.2);
-    }
-
-    .actor-pill:hover {
-        background: rgba(255, 62, 0, 0.2);
-        transform: translateY(-1px);
     }
 
     .user-rating {
-        margin: 1.5rem 0;
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
+        margin: 2rem 0;
     }
 
     .user-rating h3 {
-        font-size: 1.1rem;
+        color: var(--text-primary);
         margin-bottom: 1rem;
-        color: var(--accent-color, #ff3e00);
     }
 
     .stars-container {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        flex-wrap: wrap;
     }
 
     .star-button {
         background: none;
         border: none;
-        color: rgba(255, 255, 255, 0.2);
         font-size: 1.5rem;
         cursor: pointer;
-        transition: all 0.2s ease;
-        padding: 0;
-        line-height: 1;
+        color: var(--text-secondary);
+        transition: color 0.3s ease;
+        padding: 0.25rem;
     }
 
     .star-button:hover,
     .star-button.active {
-        color: #ff3e00;
-        transform: scale(1.1);
+        color: var(--accent-color);
     }
 
     .submit-vote {
-        background: #ff3e00;
+        background: var(--accent-color);
         color: white;
         border: none;
         padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
+        border-radius: 0.5rem;
         cursor: pointer;
-        transition: all 0.2s ease;
+        font-weight: 600;
+        transition: all 0.3s ease;
         margin-left: 1rem;
     }
 
-    .submit-vote:hover:not(:disabled) {
-        background: #ff5722;
+    .submit-vote:hover {
+        opacity: 0.9;
         transform: translateY(-1px);
     }
 
     .submit-vote:disabled {
-        opacity: 0.5;
+        background: var(--text-secondary);
         cursor: not-allowed;
+        transform: none;
     }
 
     .vote-message {
         margin-top: 0.5rem;
-        font-size: 0.9rem;
-        color: var(--accent-color, #ff3e00);
+        color: var(--accent-color);
+        font-weight: 500;
     }
 
     @media (max-width: 768px) {
@@ -514,27 +604,22 @@
             grid-template-columns: 1fr;
         }
 
-        .modal-media {
-            max-width: 300px;
-            margin: 0 auto;
-        }
-
         .modal-content {
-            margin: 1rem;
+            margin: 0;
+            max-height: 100vh;
+            border-radius: 0;
         }
 
-        .modal-media img {
-            border-radius: 12px 12px 0 0;
-            max-height: 400px;
+        .modal-backdrop {
+            padding: 0;
         }
 
-        .modal-info {
-            padding: 1.5rem;
-        }
-
-        .cast-pills {
-            flex-wrap: wrap;
+        .cast-list {
             gap: 0.5rem;
+        }
+
+        .cast-item {
+            flex: 1 1 calc(50% - 0.5rem);
         }
     }
 </style> 

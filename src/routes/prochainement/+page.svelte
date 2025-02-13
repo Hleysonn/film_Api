@@ -3,6 +3,7 @@
     import { fade } from 'svelte/transition';
     import MovieModal from '$lib/components/MovieModal.svelte';
     import { favoritesStore } from '$lib/stores/favorites';
+    import { searchQuery } from '$lib/stores/search';
     
     interface Film {
         id: number;
@@ -22,6 +23,11 @@
     let totalPages = 1;
     let selectedMovie: Film | null = null;
     let isModalOpen = false;
+
+    $: filteredFilms = films.filter(film => 
+        film.title.toLowerCase().includes($searchQuery.toLowerCase()) ||
+        film.overview.toLowerCase().includes($searchQuery.toLowerCase())
+    );
 
     async function loadMovies(page: number) {
         try {
@@ -102,8 +108,18 @@
             <p>{error}</p>
         </div>
     {:else}
+        {#if $searchQuery}
+            <div class="search-results" transition:fade>
+                {#if filteredFilms.length === 0}
+                    <p class="no-results">Aucun film ne correspond à votre recherche "{$searchQuery}"</p>
+                {:else}
+                    <p class="results-count">{filteredFilms.length} film{filteredFilms.length > 1 ? 's' : ''} trouvé{filteredFilms.length > 1 ? 's' : ''}</p>
+                {/if}
+            </div>
+        {/if}
+
         <div class="movies-grid">
-            {#each films as movie (movie.id)}
+            {#each filteredFilms as movie (movie.id)}
                 <div class="movie-card" transition:fade on:click={() => openModal(movie)}>
                     <div class="movie-poster">
                         <img 
@@ -179,7 +195,7 @@
         justify-content: center;
         min-height: 400px;
         gap: 1rem;
-        color: var(--text-color, white);
+        color: var(--text-primary);
     }
 
     .loader {
@@ -199,23 +215,24 @@
 
     .movies-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 2rem;
         padding: 1rem 0;
     }
 
     .movie-card {
-        background: var(--card-bg, #1a1a1a);
+        background: var(--card-bg);
         border-radius: 12px;
         overflow: hidden;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--card-shadow);
         cursor: pointer;
+        border: 1px solid var(--card-border);
     }
 
     .movie-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: var(--card-hover-shadow);
     }
 
     .movie-poster {
@@ -234,7 +251,7 @@
     .movie-overlay {
         position: absolute;
         inset: 0;
-        background: rgba(0, 0, 0, 0.85);
+        background: var(--overlay-bg);
         padding: 1.5rem;
         opacity: 0;
         transition: all 0.3s ease;
@@ -264,7 +281,7 @@
     }
 
     .movie-overview {
-        color: white;
+        color: var(--overlay-text);
         font-size: 0.9rem;
         line-height: 1.5;
         max-height: 80%;
@@ -280,7 +297,7 @@
     .movie-info h3 {
         margin: 0;
         font-size: 1.1rem;
-        color: var(--text-color, white);
+        color: var(--text-primary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -289,7 +306,7 @@
     .release-date {
         margin: 0.5rem 0 0;
         font-size: 0.9rem;
-        color: var(--text-muted, #888);
+        color: var(--text-secondary);
     }
 
     .title {
@@ -297,7 +314,7 @@
         font-size: 2.5rem;
         font-weight: 800;
         margin-bottom: 2rem;
-        color: var(--text-color, white);
+        color: var(--text-primary);
         text-transform: uppercase;
         letter-spacing: 0.2em;
         position: relative;
@@ -348,7 +365,7 @@
 
     .page-info {
         font-size: 1.1rem;
-        color: var(--text-color, white);
+        color: var(--text-primary);
         min-width: 150px;
         text-align: center;
         font-weight: 500;
@@ -399,32 +416,136 @@
         }
     }
 
+    @media (max-width: 1400px) {
+        .movies-container {
+            padding: 2rem;
+        }
+
+        .movies-grid {
+            gap: 1.5rem;
+        }
+    }
+
     @media (max-width: 1200px) {
+        .movies-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @media (max-width: 1024px) {
         .movies-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
 
-    @media (max-width: 900px) {
-        .movies-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 600px) {
-        .movies-grid {
-            grid-template-columns: repeat(1, 1fr);
-            gap: 1rem;
-        }
-    }
-
     @media (max-width: 768px) {
         .movies-container {
-            padding: 1rem;
+            padding: 1.5rem;
+        }
+
+        .movies-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
         }
 
         .title {
             font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .movie-info h3 {
+            font-size: 1rem;
+        }
+
+        .movie-overview {
+            font-size: 0.8125rem;
+            line-height: 1.4;
+        }
+
+        .search-results {
+            margin-bottom: 1.5rem;
+        }
+
+        .results-count, .no-results {
+            font-size: 1rem;
+        }
+
+        .pagination {
+            margin-top: 1.5rem;
+            gap: 0.75rem;
+        }
+
+        .pagination-button {
+            padding: 0.625rem 1rem;
+            font-size: 1rem;
+        }
+
+        .page-info {
+            font-size: 0.875rem;
+            min-width: 120px;
+        }
+
+        .loading-container {
+            min-height: 300px;
+        }
+
+        .loader {
+            width: 40px;
+            height: 40px;
+        }
+
+        .release-info {
+            font-size: 0.8125rem;
+            padding: 0.375rem 0.75rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .movies-container {
+            padding: 1rem;
+        }
+
+        .movies-grid {
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1rem;
+        }
+
+        .title {
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .movie-card {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .movie-info h3 {
+            font-size: 1.125rem;
+        }
+
+        .movie-overview {
+            font-size: 0.875rem;
+        }
+
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .page-info {
+            order: -1;
+            width: 100%;
+            margin-bottom: 0.75rem;
+        }
+
+        .loading-container {
+            min-height: 250px;
+        }
+
+        .release-info {
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
         }
     }
 </style> 

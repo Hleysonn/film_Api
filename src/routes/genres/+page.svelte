@@ -1,6 +1,7 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
+    import { onMount } from 'svelte';
+    import '../../styles/genres.css';
     
     interface Genre {
         id: number;
@@ -21,7 +22,7 @@
     let loading = true;
     let error: string | null = null;
 
-    async function loadGenres() {
+    const loadGenres = async () => {
         try {
             loading = true;
             const response = await fetch(
@@ -34,23 +35,23 @@
         } finally {
             loading = false;
         }
-    }
+    };
 
-    async function loadMoviesByGenre(genreId: number) {
+    const loadMoviesByGenre = async (genreId: number) => {
         try {
             loading = true;
             const response = await fetch(
                 `${import.meta.env.VITE_TMDB_API_URL}/discover/movie?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=fr-FR&with_genres=${genreId}&sort_by=popularity.desc`
             );
             const data = await response.json();
-            moviesByGenre = data.results.slice(0, 4); // On prend les 4 films les plus populaires
+            moviesByGenre = data.results.slice(0, 4);
             selectedGenre = genres.find(g => g.id === genreId) || null;
         } catch (e) {
             error = "Erreur lors du chargement des films";
         } finally {
             loading = false;
         }
-    }
+    };
 
     onMount(() => {
         loadGenres();
@@ -99,139 +100,4 @@
             {/each}
         </div>
     {/if}
-</div>
-
-<style>
-    .movies-container {
-        padding: 2rem;
-        max-width: 1400px;
-        margin: 0 auto;
-        min-height: calc(100vh - 100px);
-    }
-
-    .loading-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 400px;
-        gap: 1rem;
-        color: var(--text-color, white);
-    }
-
-    .loader {
-        width: 50px;
-        height: 50px;
-        border: 4px solid var(--text-muted, #888);
-        border-top-color: var(--accent-color, #ff3e00);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    .error-container {
-        text-align: center;
-        color: #ff3e00;
-        padding: 2rem;
-    }
-
-    .genres-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
-        padding: 1rem 0;
-    }
-
-    .genre-card {
-        background: var(--card-bg, #1a1a1a);
-        border-radius: 12px;
-        padding: 2rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .genre-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-        background: var(--accent-color, #ff3e00);
-    }
-
-    .genre-card h3 {
-        margin: 0;
-        font-size: 1.5rem;
-        color: var(--text-color, white);
-        font-weight: 600;
-    }
-
-    .movies-preview {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-        margin-top: 1rem;
-    }
-
-    .preview-poster {
-        aspect-ratio: 2/3;
-        overflow: hidden;
-        border-radius: 6px;
-    }
-
-    .preview-poster img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .title {
-        text-align: center;
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 2rem;
-        color: var(--text-color, white);
-        text-transform: uppercase;
-        letter-spacing: 0.2em;
-        position: relative;
-        padding-bottom: 1rem;
-    }
-
-    .title::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60px;
-        height: 4px;
-        background-color: var(--accent-color, #ff3e00);
-        border-radius: 2px;
-    }
-
-    @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    @media (max-width: 1200px) {
-        .genres-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 768px) {
-        .genres-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .movies-container {
-            padding: 1rem;
-        }
-
-        .title {
-            font-size: 2rem;
-        }
-    }
-</style> 
+</div> 

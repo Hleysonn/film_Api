@@ -1,0 +1,191 @@
+.actor-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 1rem;
+    color: var(--text-primary);
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--text-muted, #888);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.error-container {
+    text-align: center;
+    color: var(--accent-color);
+    padding: 2rem;
+}
+
+.actor-header {
+    margin-bottom: 3rem;
+}
+
+.actor-profile {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.profile-image {
+    width: 100%;
+    border-radius: 1rem;
+    box-shadow: var(--card-shadow);
+}
+
+.actor-info {
+    padding: 1rem 0;
+}
+
+.actor-info h1 {
+    font-size: 2.5rem;
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+}
+
+.birth-info {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+}
+
+.department {
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    margin: 1rem 0;
+}
+
+.biography-section {
+    margin: 2rem 0;
+}
+
+.biography-section h2 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.biography {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 1.1rem;
+    white-space: pre-line;
+}
+
+.filmography-section {
+    margin: 3rem 0;
+}
+
+.filmography-section h2 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+}
+
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.movie-card {
+    background: var(--card-bg);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--card-border);
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.movie-poster {
+    position: relative;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+}
+
+.movie-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.movie-info {
+    padding: 1rem;
+}
+
+.movie-info h3 {
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.character {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    font-style: italic;
+}
+
+.release-date {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .actor-container {
+        padding: 1rem;
+    }
+
+    .actor-profile {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .profile-image {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .actor-info h1 {
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .birth-info, .department {
+        text-align: center;
+    }
+
+    .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+} 
