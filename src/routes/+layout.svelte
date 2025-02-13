@@ -7,6 +7,7 @@
 	import { searchQuery } from '$lib/stores/search';
 	import { theme } from '$lib/stores/theme';
 	
+
 	let isSidebarOpen = false;
 	
 	const allMenuItems = [
@@ -172,7 +173,7 @@
 	</div>
 </div>
 
-<style>
+ <style>
 	:global(:root) {
 		--bg-primary: #030712;
 		--bg-secondary: #0A0A0F;

@@ -81,10 +81,10 @@
             );
             const data = await response.json();
             
-            // On ne prend que les 3 premiers acteurs
+            // 3 acteurs MAX
             const mainCast = data.cast.slice(0, 3);
             
-            // Pour chaque acteur, on récupère ses détails complets
+            // détails acteur complets
             const actorsWithDetails = await Promise.all(
                 mainCast.map(async (actor: { id: number; name: string; character: string; profile_path: string | null; biography?: string; birthday?: string; place_of_birth?: string; deathday?: string | null; known_for_department?: string }) => {
                     try {
@@ -93,7 +93,7 @@
                         );
                         const details = await detailsResponse.json();
                         
-                        // On combine les informations du casting avec les détails de l'acteur
+                     
                         return {
                             ...actor,
                             biography: details.biography,
@@ -165,7 +165,7 @@
             const data = await response.json();
             
             if (data.success) {
-                // Sauvegarder le vote localement
+            
                 votesStore.addVote(movie.id, selectedRating);
                 voteMessage = 'Vote enregistré !';
                 setTimeout(() => voteMessage = '', 3000);
@@ -181,7 +181,7 @@
     }
 
     function navigateToActor(actorId: number) {
-        onClose(); // Fermer le modal avant la navigation
+        onClose(); 
         goto(`/acteur/${actorId}`);
     }
 

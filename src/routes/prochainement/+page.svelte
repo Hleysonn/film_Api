@@ -4,6 +4,8 @@
     import MovieModal from '$lib/components/MovieModal.svelte';
     import { favoritesStore } from '$lib/stores/favorites';
     import { searchQuery } from '$lib/stores/search';
+    import '$styles/prochainement.css';
+   
     
     interface Film {
         id: number;
@@ -179,7 +181,7 @@
         onClose={closeModal}
     />
 {/if}
-
+<!-- 
 <style>
     .movies-container {
         padding: 2rem;
@@ -548,4 +550,4 @@
             padding: 0.5rem 1rem;
         }
     }
-</style> 
+</style>  -->

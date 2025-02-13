@@ -1,7 +1,7 @@
 <script lang="ts">
     import { fade } from 'svelte/transition';
     import { onMount } from 'svelte';
-    import '../../styles/genres.css';
+    import '$styles/genres.css';
     
     interface Genre {
         id: number;

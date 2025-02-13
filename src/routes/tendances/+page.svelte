@@ -4,7 +4,7 @@
     import MovieModal from '$lib/components/MovieModal.svelte';
     import { favoritesStore } from '$lib/stores/favorites';
     import { searchQuery } from '$lib/stores/search';
-    import '../../styles/tendances.css';
+    import '$styles/tendances.css';
     
     interface Film {
         id: number;
@@ -167,7 +167,7 @@
     />
 {/if}
 
-<style>
+<!-- <style>
     .movies-container {
         padding: 2rem;
         max-width: 1400px;
@@ -529,4 +529,4 @@
     .results-count {
         font-size: 1.1rem;
     }
-</style> 
+</style>  -->

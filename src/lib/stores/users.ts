@@ -4,11 +4,11 @@ export interface User {
     id: string;
     username: string;
     email: string;
-    password: string; // En production, ne jamais stocker les mots de passe en clair !
+    password: string;
 }
 
 function createUsersStore() {
-    // Charger les utilisateurs depuis localStorage au démarrage
+ 
     const storedUsers = typeof window !== 'undefined' 
         ? JSON.parse(localStorage.getItem('users') || '[]')
         : [];
@@ -20,7 +20,7 @@ function createUsersStore() {
         subscribe,
         register: (user: Omit<User, 'id'>) => {
             const users = get(store);
-            // Vérifier si l'email existe déjà
+            // Vérif email
             if (users.some(u => u.email === user.email)) {
                 throw new Error('Cet email est déjà utilisé');
             }

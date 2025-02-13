@@ -8,7 +8,7 @@
     import { get } from 'svelte/store';
     import { page } from '$app/stores';
     import { searchQuery } from '$lib/stores/search';
-    import '../../styles/films.css';
+    import '$styles/films.css';
 
     interface Film {
         id: number;
@@ -178,7 +178,7 @@
     />
 {/if}
 
-<style>
+<!-- <style>
     .movies-container {
         padding: 2rem;
         max-width: 1400px;
@@ -493,4 +493,4 @@
     .results-count {
         font-size: 1.1rem;
     }
-</style> 
+</style>  -->

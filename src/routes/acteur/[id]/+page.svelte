@@ -206,7 +206,7 @@
     />
 {/if}
 
-<style>
+<!-- <style>
     .actor-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -398,4 +398,4 @@
             gap: 1rem;
         }
     }
-</style> 
+</style>  -->

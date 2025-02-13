@@ -5,6 +5,7 @@
     import { auth } from '$lib/stores/auth';
     import { favoritesStore, type FavoriteMovie } from '$lib/stores/favorites';
     import MovieModal from '$lib/components/MovieModal.svelte';
+    import '$styles/favoris.css';
 
     let isModalOpen = false;
     let selectedMovie: FavoriteMovie | null = null;
@@ -89,7 +90,7 @@
         onClose={closeModal}
     />
 {/if}
-
+<!-- 
 <style>
     .movies-container {
         padding: 2rem;
@@ -283,4 +284,4 @@
             font-size: 2rem;
         }
     }
-</style> 
+</style>  -->
