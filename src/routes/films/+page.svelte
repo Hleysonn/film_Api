@@ -24,6 +24,7 @@
     let totalPages = data.totalPages;
     let selectedMovie: Film | null = null;
     let isModalOpen = false;
+    let toastMessage = '';
 
     $: isAuthenticated = $auth.isAuthenticated;
     $: filteredFilms = films.filter(film => 
@@ -54,6 +55,7 @@
         isModalOpen = false;
         selectedMovie = null;
     }
+
 
     async function toggleFavorite(movie: Film, event: MouseEvent) {
         event.stopPropagation();
@@ -108,13 +110,22 @@
                         <div class="movie-rating">
                             <span>{movie.vote_average.toFixed(1)}</span>
                         </div>
+
                         <button 
+                        class="favorite-button" 
+                        on:click={(e) => toggleFavorite(movie, e)}
+                        class:is-favorite={favoritesStore.isFavorite(movie.id)}
+  
+                    >
+                        ♥
+                    </button>
+                        <!-- <button 
                             class="favorite-button" 
                             on:click={(e) => toggleFavorite(movie, e)}
                             class:is-favorite={favoritesStore.isFavorite(movie.id)}
                         >
                             ♥
-                        </button>
+                        </button> -->
                         <p class="movie-overview">{movie.overview}</p>
                     </div>
                 </div>
@@ -152,6 +163,8 @@
         onClose={closeModal}
     />
 {/if}
+
+
 
 <!-- <style>
     .movies-container {
